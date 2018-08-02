@@ -6,20 +6,12 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ListView;
-import android.widget.TextView;
-import android.widget.Toast;
-
-import java.util.ArrayList;
 
 import br.com.alanlb.receitas.R;
 import br.com.alanlb.receitas.control.CreateListView;
-import br.com.alanlb.receitas.dao.ReceitaDAO;
-import br.com.alanlb.receitas.exception.SqliteException;
-import br.com.alanlb.receitas.model.Item;
-import br.com.alanlb.receitas.model.Receita;
 import br.com.alanlb.receitas.util.ListAdapterItem;
 
-public class MinhasReceitasFragment extends Fragment{
+public class MinhasReceitasFragment extends Fragment {
     private ListView lv;
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup parent, Bundle savedInstanceState) {

@@ -8,7 +8,7 @@ import android.view.ViewGroup;
 
 import br.com.alanlb.receitas.R;
 
-public class PesquisaReceitasFragment extends Fragment{
+public class PesquisaReceitasFragment extends Fragment {
 
     public View onCreateView(LayoutInflater inflater, ViewGroup parent, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.pesquisar_frag, null);

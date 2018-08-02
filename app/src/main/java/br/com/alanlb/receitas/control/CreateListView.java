@@ -14,13 +14,13 @@ import java.util.ArrayList;
 
 import br.com.alanlb.receitas.MainActivity;
 import br.com.alanlb.receitas.R;
-import br.com.alanlb.receitas.dao.ReceitaDAO;
+import br.com.alanlb.receitas.dao.Facade;
+import br.com.alanlb.receitas.dao.ReceitaDAOSqlite;
+import br.com.alanlb.receitas.dao.SingletonFactory;
 import br.com.alanlb.receitas.exception.SqliteException;
 import br.com.alanlb.receitas.model.Item;
 import br.com.alanlb.receitas.model.Receita;
 import br.com.alanlb.receitas.util.ListAdapterItem;
-import br.com.alanlb.receitas.view.AdicionarReceitasFragment;
-import br.com.alanlb.receitas.view.MinhasReceitasFragment;
 import br.com.alanlb.receitas.view.ReceitaFrag;
 
 public class CreateListView implements AdapterView.OnItemClickListener {
@@ -46,7 +46,8 @@ public class CreateListView implements AdapterView.OnItemClickListener {
 
     public void criar(Context context, ListView listView, int id){
         try {
-            ArrayList<Receita> receitas = ReceitaDAO.buscarReceitaPorUsuario(context, id);
+            ArrayList<Receita> receitas = Facade.buscarReceitaPorUsuario(context, id);
+            //ArrayList<Receita> receitas = SingletonFactory.getFactory().getReceitaDAO().buscarReceitaPorUsuario(context, id);
             this.receitas = receitas;
             ArrayList<Item> itens = new ArrayList<Item>();
 

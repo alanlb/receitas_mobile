@@ -11,7 +11,7 @@ import br.com.alanlb.receitas.R;
 import br.com.alanlb.receitas.control.CreateListView;
 import br.com.alanlb.receitas.util.ListAdapterItem;
 
-public class MinhasReceitasDialogFragment extends Fragment{
+public class MinhasReceitasDialogFragment extends Fragment {
     private ListView lv;
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup parent, Bundle savedInstanceState) {

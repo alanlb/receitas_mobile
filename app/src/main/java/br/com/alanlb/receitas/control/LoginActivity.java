@@ -3,7 +3,6 @@ package br.com.alanlb.receitas.control;
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.annotation.TargetApi;
-import android.app.Activity;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.support.annotation.NonNull;
@@ -37,7 +36,9 @@ import java.util.List;
 
 import br.com.alanlb.receitas.MainActivity;
 import br.com.alanlb.receitas.R;
-import br.com.alanlb.receitas.dao.UsuarioDAO;
+import br.com.alanlb.receitas.dao.Facade;
+import br.com.alanlb.receitas.dao.SingletonFactory;
+import br.com.alanlb.receitas.dao.UsuarioDAOSqlite;
 import br.com.alanlb.receitas.exception.SqliteException;
 import br.com.alanlb.receitas.exception.ValidationException;
 import br.com.alanlb.receitas.model.Usuario;
@@ -180,7 +181,7 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
         // Check for a valid email address.
 
         try {
-            Usuario u = UsuarioDAO.buscarUsuarioPorLogin(this, email, password);
+            Usuario u = Facade.buscarUsuarioPorLogin(this, email, password);
             if (u != null) {
                 showProgress(true);
                 mAuthTask = new UserLoginTask(email, password);
@@ -205,7 +206,7 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
     private boolean isEmailValid(String email){
         //TODO: Replace this with your own logic
         try {
-            Util.validarEmail(email);
+            Facade.validarEmailUsuario(email);
         } catch (ValidationException e) {
             Toast.makeText(this, e.getMessage(), Toast.LENGTH_SHORT);
         }
@@ -308,12 +309,12 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
         String emailString = email.getText().toString();
         String senhaString = senha.getText().toString();
         try {
-            Util.validarLoginCadastroLogin(nomeString, emailString, senhaString);
+            Facade.validarCadastro(nomeString, emailString, senhaString);
             Usuario novoUsuario = new Usuario();
             novoUsuario.setNomeCompleto(nomeString);
             novoUsuario.setLogin(emailString);
             novoUsuario.setSenha(senhaString);
-            UsuarioDAO.salvarUsuario(this, novoUsuario);
+            Facade.cadastrarUsuario(this, novoUsuario);
             setContentView(R.layout.activity_login);
             Toast.makeText(this, "Cadastrado com sucesso! ", Toast.LENGTH_SHORT).show();
         } catch (ValidationException e) {

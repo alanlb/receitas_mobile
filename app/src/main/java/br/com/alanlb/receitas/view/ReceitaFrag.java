@@ -8,7 +8,6 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import br.com.alanlb.receitas.R;
-import br.com.alanlb.receitas.dao.sqlite.ScriptsSQL;
 
 public class ReceitaFrag extends Fragment {
     private TextView idText;

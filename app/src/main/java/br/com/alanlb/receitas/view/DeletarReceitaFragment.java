@@ -8,7 +8,7 @@ import android.view.ViewGroup;
 
 import br.com.alanlb.receitas.R;
 
-public class DeletarReceitaFragment extends Fragment{
+public class DeletarReceitaFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup parent, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.deletar_frag, null);
