@@ -2,14 +2,19 @@ package br.com.alanlb.receitas.model;
 
 import java.util.ArrayList;
 
+import br.com.alanlb.receitas.dao.HistoricoDao;
+import br.com.alanlb.receitas.exception.SqliteException;
+
 public class HistoricoProxy {
     private Historico historicoClass;
+    private int id;
 
-    public String getHistorico(){
+    public Historico getHistorico(/*id*/) throws SqliteException {
         if(historicoClass == null){
-            historicoClass = new Historico();
+            historicoClass = HistoricoDao.buscarPorID(/*id*/);
+            return historicoClass;
         }
-        return historicoClass.getHistoricos();
+        return historicoClass;
     }
 
     public Historico getObserver(){

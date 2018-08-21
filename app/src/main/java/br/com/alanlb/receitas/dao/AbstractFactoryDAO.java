@@ -8,16 +8,20 @@ import br.com.alanlb.receitas.exception.SqliteException;
 import br.com.alanlb.receitas.model.SGBD;
 
 public abstract class AbstractFactoryDAO {
+    private static  AbstractFactoryDAO factory;
 
-
-    public static AbstractFactoryDAO getInstance(SGBD sgbd){
-        switch (sgbd){
-            case SQLITE:
-                return new FactorySQL();
-            case MYSQL:
-                return new FactoryMYSQL();
+    public synchronized static AbstractFactoryDAO getInstance(SGBD sgbd){
+        if (factory == null) {
+            switch (sgbd) {
+                case SQLITE:
+                    factory = new FactorySQL();
+                    return factory;
+                case MYSQL:
+                    factory = new FactoryMYSQL();
+                    return factory;
+            }
         }
-        return null;
+        return factory;
     }
 
     public abstract Object getBD(Context context) throws SqliteException;

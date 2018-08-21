@@ -1,0 +1,55 @@
+{
+  "project_info": {
+    "project_number": "401882199732",
+    "firebase_url": "https://receitas-bbc2d.firebaseio.com",
+    "project_id": "receitas-bbc2d",
+    "storage_bucket": "receitas-bbc2d.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:401882199732:android:e4fc023a250332c6",
+        "android_client_info": {
+          "package_name": "br.com.alanlb.receitas"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "401882199732-kkvkq31rdl8eibc8v4ms4m0bv3lc9n99.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "br.com.alanlb.receitas",
+            "certificate_hash": "0971f3cf2f0f7ddd69193f98c3b8f81cee609c99"
+          }
+        },
+        {
+          "client_id": "401882199732-8fo4sdtdds13q0nq9fcbu9pmkk14pjb0.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCNyA0t8wgFDYGodP6bSIG1ZuV0v38A7Ww"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 2,
+          "other_platform_oauth_client": [
+            {
+              "client_id": "401882199732-8fo4sdtdds13q0nq9fcbu9pmkk14pjb0.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
