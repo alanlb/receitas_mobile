@@ -5,7 +5,7 @@ import br.com.alanlb.receitas.model.SGBD;
 public class SingletonFactory {
    private static AbstractFactoryDAO factory;
 
-    public static AbstractFactoryDAO getFactory(){
+    public synchronized static AbstractFactoryDAO getFactory(){
         if(factory == null){
             factory = AbstractFactoryDAO.getInstance(SGBD.SQLITE);
             return factory;

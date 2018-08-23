@@ -117,7 +117,7 @@ public class HistoricoDao {
                 String id_receita = cursor.getString(cursor.getColumnIndex("id"));
                 String id_usuario = cursor.getString(cursor.getColumnIndex("id_usuario"));
                 receita.setId(Integer.parseInt(id_receita));
-                receita.setId_usuario(Integer.parseInt(id_usuario));
+                receita.setId_usuario(id_usuario);
                 receita.setNome(cursor.getString(cursor.getColumnIndex("nome")));
                 receita.setIngredientes(cursor.getString(cursor.getColumnIndex("ingredientes")));
                 receita.setModoDePreparo(cursor.getString(cursor.getColumnIndex("modo_de_preparo")));

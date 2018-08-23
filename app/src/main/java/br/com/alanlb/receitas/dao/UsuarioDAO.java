@@ -15,4 +15,6 @@ public abstract class UsuarioDAO {
     public abstract Boolean isUsuarioLogado(Context context) throws SqliteException;
 
     public abstract void deletarTabela(Context context) throws SqliteException;
+
+    public abstract void deletarTabelaPorId(Context context, int id) throws SqliteException;
 }

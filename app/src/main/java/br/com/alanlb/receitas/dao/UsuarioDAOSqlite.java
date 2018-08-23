@@ -35,10 +35,13 @@ public class UsuarioDAOSqlite extends UsuarioDAO{
 
         try {
             pegarBD(context);
+            //deletarTabela(context);
+            //db.execSQL(ScriptsSQL.Usuario.createTable);
             sql = ScriptsSQL.Usuario.insert;
             sql = MessageFormat.format(sql, usuario.getToSqlInsert());
             db.execSQL(sql);
             FactorySQL.closedb(context);
+
 
         } catch (SqliteException e) {
             e.printStackTrace();
@@ -79,26 +82,29 @@ public class UsuarioDAOSqlite extends UsuarioDAO{
     @Override
     public Usuario buscarUsuarioPorId(Context context, int id) throws SqliteException {
         pegarBD(context);
-//        id = "'" + id + "'";
+        //id = "'" + id + "'";
         sql = ScriptsSQL.Usuario.selectPorId;
         sql = MessageFormat.format(sql, id);
         System.out.println(sql);
         cursor = db.rawQuery(sql, null);
 //            cursor = db.rawQuery("select * from usuario where login = ? ", new String[] {login});
-//            cursor = db.query("usuario",null,"login=", new String[] {login}, null, null, null);
+//            cursor = db.query("usuario",,"login=", new String[] {login}, null, null, null);
+//            cursor = db.query("usuario", new String[]{"id"}, "id" + "= ? ", new String[]{String.valueOf(id)}, null, null, null, null);
+            if (cursor != null) {
+            if (cursor.moveToFirst()) {
+                usuario = new Usuario();
 
-        if (cursor.moveToFirst()) {
-            usuario = new Usuario();
-
-            usuario.setId(cursor.getInt(cursor.getColumnIndex(ScriptsSQL.Usuario.columID)));
-            usuario.setNomeCompleto(cursor.getString(cursor.getColumnIndex("nome_completo")));
-            usuario.setLogin(cursor.getString(cursor.getColumnIndex("login")));
-            usuario.setSenha(cursor.getString(cursor.getColumnIndex("senha")));
-            usuario.setSincronizado(Boolean.valueOf(cursor.getString(cursor.getColumnIndex("sincronizado"))));
-            usuario.setDataCadastro(Util.getDateToString(cursor.getString(cursor.getColumnIndex("data_cadatro")), Util.dataTimeFormater_dd_MM_yyy_HH_mm_ss));
-            usuario.setUltimoAcesso(Util.getDateToString(cursor.getString(cursor.getColumnIndex("ultimo_acesso")), Util.dataTimeFormater_dd_MM_yyy_HH_mm_ss));
-            FactorySQL.closedb(context);
-            return usuario;
+                usuario.setId(cursor.getInt(cursor.getColumnIndex(ScriptsSQL.Usuario.columID)));
+                usuario.setIdFireBase(cursor.getString(cursor.getColumnIndex("id_firebase")));
+                usuario.setNomeCompleto(cursor.getString(cursor.getColumnIndex("nome_completo")));
+                usuario.setLogin(cursor.getString(cursor.getColumnIndex("login")));
+                usuario.setSenha(cursor.getString(cursor.getColumnIndex("senha")));
+                usuario.setSincronizado(Boolean.valueOf(cursor.getString(cursor.getColumnIndex("sincronizado"))));
+                usuario.setDataCadastro(Util.getDateToString(cursor.getString(cursor.getColumnIndex("data_cadatro")), Util.dataTimeFormater_dd_MM_yyy_HH_mm_ss));
+                usuario.setUltimoAcesso(Util.getDateToString(cursor.getString(cursor.getColumnIndex("ultimo_acesso")), Util.dataTimeFormater_dd_MM_yyy_HH_mm_ss));
+                FactorySQL.closedb(context);
+                return usuario;
+            }
         }
         throw new SqliteException("usuario ou senha inválida");
 
@@ -118,6 +124,21 @@ public class UsuarioDAOSqlite extends UsuarioDAO{
         try {
             pegarBD(context);
             sql = ScriptsSQL.Usuario.dropTable;
+            db.execSQL(sql);
+            FactorySQL.closedb(context);
+
+        } catch (SqliteException e) {
+            e.printStackTrace();
+            throw new SqliteException("Erro Insert Usuario");
+        }
+
+    }
+    @Override
+    public void deletarTabelaPorId(Context context, int id) throws SqliteException {
+        try {
+            pegarBD(context);
+            sql = ScriptsSQL.Usuario.deleteTableById;
+            sql = MessageFormat.format(sql, id);
             db.execSQL(sql);
             FactorySQL.closedb(context);
 

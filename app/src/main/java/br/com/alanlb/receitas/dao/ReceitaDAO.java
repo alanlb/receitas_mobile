@@ -13,13 +13,15 @@ import br.com.alanlb.receitas.model.Receita;
 
 public abstract class ReceitaDAO {
 
+    public abstract void criarTabela(Context context) throws SqliteException;
+
     public abstract void salvarReceita(Context context, Receita receita) throws SqliteException;
 
     public abstract ArrayList<Receita> buscarReceitaPorNome(Context context, String nome) throws SqliteException;
 
     public abstract List<Receita> buscarToasReceitas(Context context) throws SqliteException;
 
-    public abstract ArrayList<Receita> buscarReceitaPorUsuario(Context context, int id) throws SqliteException;
+    public abstract ArrayList<Receita> buscarReceitaPorUsuario(Context context, String id) throws SqliteException;
 
     public abstract void deletarReceita(Context context, int id)throws SqliteException;
 

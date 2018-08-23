@@ -1,11 +1,20 @@
 package br.com.alanlb.receitas.model;
 
-import java.util.Date;
+import android.content.Context;
 
+import com.google.firebase.database.DatabaseReference;
+
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
+
+import br.com.alanlb.receitas.dao.ConfiguracaoFireBase;
+import br.com.alanlb.receitas.dao.firebase.FireBaseBD;
 import br.com.alanlb.receitas.util.Util;
 
 public class Usuario {
     private Integer id;
+    private String idFireBase;
     private boolean sincronizado;
 
     private String nomeCompleto;
@@ -20,6 +29,28 @@ public class Usuario {
         this.dataCadastro = new Date();
         this.ultimoAcesso= new Date();
         this.sincronizado = true;
+    }
+
+    public void salvar(Context context){
+        DatabaseReference databaseReference = FireBaseBD.getReference(context);
+        databaseReference.child("usuario").child(String.valueOf(getIdFireBase())).setValue(this);
+    }
+
+    public Map<String, Object> toMap(){
+        HashMap<String, Object> hashMapUsuario = new HashMap<>();
+
+        hashMapUsuario.put("id", getId());
+        hashMapUsuario.put("idFireBase", getIdFireBase());
+        hashMapUsuario.put("sincronizado", isSincronizado());
+
+        hashMapUsuario.put("nome", getNomeCompleto());
+        hashMapUsuario.put("login", getLogin());
+        hashMapUsuario.put("senha", getSenha());
+
+        hashMapUsuario.put("dataCadastro", getDataCadastro());
+        hashMapUsuario.put("ultimoAcesso", getUltimoAcesso());
+
+        return hashMapUsuario;
     }
 
     public Integer getId() {
@@ -80,6 +111,7 @@ public class Usuario {
     public Object getToSqlInsert() {
         StringBuffer sql = new StringBuffer();
         sql.append(this.id + ",");
+        sql.append("'" + this.idFireBase + "',");
         sql.append("'" + this.nomeCompleto + "',");
         sql.append("'" + this.login + "',");
         sql.append("'" + this.senha + "',");
@@ -87,5 +119,13 @@ public class Usuario {
         sql.append("'" + Util.getStringToFormaterDate(this.dataCadastro, Util.dataTimeFormater_SQLITE) + "',");
         sql.append("'" + Util.getStringToFormaterDate(this.ultimoAcesso, Util.dataTimeFormater_SQLITE) + "'");
         return sql.toString();
+    }
+
+    public String getIdFireBase() {
+        return idFireBase;
+    }
+
+    public void setIdFireBase(String idFireBase) {
+        this.idFireBase = idFireBase;
     }
 }

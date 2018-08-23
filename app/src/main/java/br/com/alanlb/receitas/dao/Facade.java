@@ -45,7 +45,14 @@ public class Facade {
         usuarioDAO.deletarTabela(context);
     }
 
+    public static void deletarTabelaPorId(Context context, int id) throws SqliteException {
+        usuarioDAO.deletarTabelaPorId(context, id);
+    }
     //Métodos de Receita
+
+    public static void criarTabelaReceita(Context context) throws SqliteException {
+        receitaDAO.criarTabela(context);
+    }
 
     public static void cadastrarReceita(Context context, Receita receita) throws SqliteException {
         receitaDAO.salvarReceita(context, receita);
@@ -55,7 +62,7 @@ public class Facade {
         return receitaDAO.buscarReceitaPorNome(context, nome);
     }
 
-    public static ArrayList<Receita> buscarReceitaPorUsuario(Context context, int idUsuario) throws SqliteException {
+    public static ArrayList<Receita> buscarReceitaPorUsuario(Context context, String idUsuario) throws SqliteException {
         return receitaDAO.buscarReceitaPorUsuario(context, idUsuario);
     }
 

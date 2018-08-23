@@ -4,10 +4,11 @@ import br.com.alanlb.receitas.util.Util;
 
 public class Receita {
     private int id;
+    private String idFireBase;
     private String nome;
     private String ingredientes;
     private String modoDePreparo;
-    private int id_usuario;
+    private String id_usuario;
 
     public Receita(String nome, String ingredientes, String modoDePreparo){
         this.setNome(nome);
@@ -51,11 +52,11 @@ public class Receita {
         this.id = id;
     }
 
-    public int getId_usuario() {
+    public String getId_usuario() {
         return id_usuario;
     }
 
-    public void setId_usuario(int id_usuario) {
+    public void setId_usuario(String id_usuario) {
         this.id_usuario = id_usuario;
     }
 
@@ -65,9 +66,16 @@ public class Receita {
         sql.append("'" + this.getNome() + "',");
         sql.append("'" + this.getIngredientes() + "',");
         sql.append("'" + this.getModoDePreparo() + "',");
-        sql.append(this.getId_usuario());
+        sql.append("'" + this.getId_usuario() + "'");
         return sql.toString();
     }
 
 
+    public String getIdFireBase() {
+        return idFireBase;
+    }
+
+    public void setIdFireBase(String idFireBase) {
+        this.idFireBase = idFireBase;
+    }
 }

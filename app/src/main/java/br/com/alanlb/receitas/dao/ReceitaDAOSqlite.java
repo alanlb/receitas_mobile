@@ -29,6 +29,18 @@ public class ReceitaDAOSqlite extends ReceitaDAO{
     }
 
     @Override
+    public void criarTabela(Context context) throws SqliteException {
+        try {
+            pegaBD(context);
+            db.execSQL(ScriptsSQL.Receita.createTable);
+        } catch (SqliteException e) {
+            e.printStackTrace();
+            throw new SqliteException("Erro Criar tabela");
+        }
+
+    }
+
+    @Override
     public void salvarReceita(Context context, Receita receita) throws SqliteException {
 
         System.out.println("ENTROU.....");
@@ -64,7 +76,7 @@ public class ReceitaDAOSqlite extends ReceitaDAO{
                 String id_receita = cursor.getString(cursor.getColumnIndex("id"));
                 String id_usuario = cursor.getString(cursor.getColumnIndex("id_usuario"));
                 receita.setId(Integer.parseInt(id_receita));
-                receita.setId_usuario(Integer.parseInt(id_usuario));
+                receita.setId_usuario(id_usuario);
                 receita.setNome(cursor.getString(cursor.getColumnIndex("nome")));
                 receita.setIngredientes(cursor.getString(cursor.getColumnIndex("ingredientes")));
                 receita.setModoDePreparo(cursor.getString(cursor.getColumnIndex("modo_de_preparo")));
@@ -100,9 +112,9 @@ public class ReceitaDAOSqlite extends ReceitaDAO{
 
     }
     @Override
-    public ArrayList<Receita> buscarReceitaPorUsuario(Context context, int id) throws SqliteException {
+    public ArrayList<Receita> buscarReceitaPorUsuario(Context context, String id) throws SqliteException {
         pegaBD(context);
-//        nome = "'" + nome + "'";
+        id = "'" + id + "'";
         sql = ScriptsSQL.Receita.selectPorUsuario;
         sql = MessageFormat.format(sql, id);
         cursor = db.rawQuery(sql, null);
@@ -116,7 +128,7 @@ public class ReceitaDAOSqlite extends ReceitaDAO{
                 String id_receita = cursor.getString(cursor.getColumnIndex("id"));
                 String id_usuario = cursor.getString(cursor.getColumnIndex("id_usuario"));
                 receita.setId(Integer.parseInt(id_receita));
-                receita.setId_usuario(Integer.parseInt(id_usuario));
+                receita.setId_usuario(id_usuario);
                 receita.setNome(cursor.getString(cursor.getColumnIndex("nome")));
                 receita.setIngredientes(cursor.getString(cursor.getColumnIndex("ingredientes")));
                 receita.setModoDePreparo(cursor.getString(cursor.getColumnIndex("modo_de_preparo")));

@@ -26,11 +26,11 @@ import br.com.alanlb.receitas.view.ReceitaFrag;
 public class CreateListView implements AdapterView.OnItemClickListener {
     private Context context;
     private ListView listView;
-    private int id;
+    private String id;
     private ArrayList<Receita> receitas;
     private Dialog dialog;
 
-    public CreateListView(Context context, ListView listView, int id){
+    public CreateListView(Context context, ListView listView, String id){
         this.context = context;
         this.listView = listView;
         this.id = id;
@@ -44,7 +44,7 @@ public class CreateListView implements AdapterView.OnItemClickListener {
          this.dialog = dialog;
     }
 
-    public void criar(Context context, ListView listView, int id){
+    public void criar(Context context, ListView listView, String id){
         try {
             ArrayList<Receita> receitas = Facade.buscarReceitaPorUsuario(context, id);
             //ArrayList<Receita> receitas = SingletonFactory.getFactory().getReceitaDAO().buscarReceitaPorUsuario(context, id);

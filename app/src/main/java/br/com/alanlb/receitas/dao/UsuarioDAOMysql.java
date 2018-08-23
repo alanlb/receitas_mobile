@@ -30,4 +30,9 @@ public class UsuarioDAOMysql extends UsuarioDAO {
     public void deletarTabela(Context context) throws SqliteException {
 
     }
+
+    @Override
+    public void deletarTabelaPorId(Context context, int id) throws SqliteException {
+
+    }
 }

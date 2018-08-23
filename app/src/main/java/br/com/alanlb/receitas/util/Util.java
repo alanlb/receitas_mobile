@@ -1,18 +1,29 @@
 package br.com.alanlb.receitas.util;
 
+import android.support.annotation.NonNull;
+
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.auth.AuthResult;
+import com.google.firebase.auth.FirebaseAuth;
+
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import br.com.alanlb.receitas.dao.ConfiguracaoFireBase;
 import br.com.alanlb.receitas.exception.ValidationException;
+import br.com.alanlb.receitas.model.Usuario;
 
 public class Util {
     public static SimpleDateFormat dateFormat;
     public static final String dataFormater_dd_MM_yyyy = "dd-MM-yyyy";
     public static final String dataTimeFormater_dd_MM_yyy_HH_mm_ss = "dd-MM-yyyy HH:mm:ss";
     public static final String dataTimeFormater_SQLITE = "dd-MM-yyyy HH:mm:ss";
+
+
 
     public static boolean verificarConexaoInternet() {
         return true;
@@ -53,6 +64,7 @@ public class Util {
             throw new ValidationException("Campo Senha deve ter no mínimo 6 caracteres");
         }
     }
+
 
 
     public static String getStringToFormaterDate(Date date, String formater) {

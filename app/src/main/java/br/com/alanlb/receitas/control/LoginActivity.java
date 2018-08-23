@@ -31,17 +31,34 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.FirebaseException;
+import com.google.firebase.auth.AuthResult;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException;
+import com.google.firebase.auth.FirebaseAuthUserCollisionException;
+import com.google.firebase.auth.FirebaseAuthWeakPasswordException;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DatabaseReference;
+
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 
 import br.com.alanlb.receitas.MainActivity;
 import br.com.alanlb.receitas.R;
+import br.com.alanlb.receitas.dao.ConfiguracaoFireBase;
 import br.com.alanlb.receitas.dao.Facade;
 import br.com.alanlb.receitas.dao.SingletonFactory;
 import br.com.alanlb.receitas.dao.UsuarioDAOSqlite;
+import br.com.alanlb.receitas.dao.firebase.FireBaseBD;
 import br.com.alanlb.receitas.exception.SqliteException;
 import br.com.alanlb.receitas.exception.ValidationException;
+import br.com.alanlb.receitas.helper.Base64Custom;
+import br.com.alanlb.receitas.helper.Preferencias;
 import br.com.alanlb.receitas.model.Usuario;
+import br.com.alanlb.receitas.model.UsuarioLogado;
 import br.com.alanlb.receitas.util.Util;
 
 import static android.Manifest.permission.READ_CONTACTS;
@@ -73,7 +90,10 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
     private EditText mPasswordView;
     private View mProgressView;
     private View mLoginFormView;
-
+    private Usuario u;
+    private static FirebaseAuth autenticacao;
+    private FirebaseAuth auth;
+    private Usuario novoUsuario;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -94,16 +114,35 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
             }
         });
 
+        Usuario usuario = pegaUsuarioLogado(1);
+        if(usuario != null){
+//            Toast.makeText(this,"ENTREIIIII EXISTEEE", Toast.LENGTH_SHORT).show();
+//            Toast.makeText(this," usuario: "+ usuario.getIdFireBase()+
+//                                             " login: "+usuario.getLogin()+
+//                                             " senha: "+ usuario.getSenha(), Toast.LENGTH_SHORT).show();
+
+            validarLoginFireBase(usuario);
+        }
+
         Button mEmailSignInButton = (Button) findViewById(R.id.email_sign_in_button);
         mEmailSignInButton.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View view) {
                 attemptLogin();
+                Usuario u = new Usuario();
+                u.setLogin(mEmailView.getText().toString());
+                u.setSenha(mPasswordView.getText().toString());
             }
         });
 
         mLoginFormView = findViewById(R.id.login_form);
         mProgressView = findViewById(R.id.login_progress);
+    }
+    @Override
+    protected void onResume(){
+        super.onResume();
+        Button button1 = (Button) findViewById(R.id.email_sign_in_button);
+        button1.setEnabled(true);
     }
 
     private void populateAutoComplete() {
@@ -178,28 +217,30 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
             cancel = true;
         }
 
-        // Check for a valid email address.
+//         Check for a valid email address.
+        u = new Usuario();
+        u.setLogin(email);
+        u.setSenha(password);
+//        try {
+//            Usuario u2 = Facade.buscarUsuarioPorLogin(this, email, password);
+//
+//            if (u2 != null) {
+//                u.setId(u2.getId());
+//                u.setNomeCompleto(u2.getNomeCompleto());
+//            }else{
+//                u.setId(1);
+//                u.setNomeCompleto("Qualquer nome");
+//                Toast.makeText(this, "E-mail ou senha inválidos", Toast.LENGTH_SHORT).show();
+//            }
+//        } catch (SqliteException e) {
+//            Toast.makeText(this, e.getMessage(), Toast.LENGTH_SHORT).show();
+//        }
+        validarLoginFireBase(u);
 
-        try {
-            Usuario u = Facade.buscarUsuarioPorLogin(this, email, password);
-            if (u != null) {
-                showProgress(true);
-                mAuthTask = new UserLoginTask(email, password);
-                Bundle bundle = new Bundle();
-                bundle.putString("EMAIL", email);
-                bundle.putString("NOME", u.getNomeCompleto());
-                bundle.putInt("ID",u.getId());
-                Intent intent = new Intent(this, MainActivity.class);
-                intent.putExtras(bundle);
-                startActivity(intent);
-                mAuthTask.execute((Void) null);
-            }else{
-                Toast.makeText(this, "E-mail ou senha inválidos", Toast.LENGTH_SHORT).show();
-            }
-        } catch (SqliteException e) {
-            Toast.makeText(this, e.getMessage(), Toast.LENGTH_SHORT).show();
-        }
 
+    }
+
+    public void verificaUsuarioLogado(){
 
     }
 
@@ -301,6 +342,56 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
         setContentView(R.layout.tela_cadastro);
     }
 
+    public void criaAuth(Usuario u){
+        auth = ConfiguracaoFireBase.getFireBaseAutenticacao();
+        novoUsuario = u;
+        auth.createUserWithEmailAndPassword(novoUsuario.getLogin(), novoUsuario.getSenha())
+                .addOnCompleteListener(LoginActivity.this, new OnCompleteListener<AuthResult>() {
+                    @Override
+                    public void onComplete(@NonNull Task<AuthResult> task) {
+                        if(task.isSuccessful()){
+                            Toast.makeText(getBaseContext(), "Cadastrado com sucesso!", Toast.LENGTH_LONG).show();
+                            //String identificadorUsuario = Base64Custom.codificarBase64(novoUsuario.getLogin());
+
+                            FirebaseUser usuarioFireBase = task.getResult().getUser();
+                            novoUsuario.setIdFireBase(usuarioFireBase.getUid());
+                            novoUsuario.salvar(getBaseContext());
+
+                            //Preferencias preferencia = new Preferencias(LoginActivity.this);
+                            //preferencia.salvarUsuarioPreferencias(u.getIdFireBase(), novoUsuario.getNomeCompleto());
+                            setContentView(R.layout.activity_login);
+                        }else{
+                            String erro = "";
+
+                            try {
+                                throw task.getException();
+                            }catch (FirebaseAuthWeakPasswordException e){
+                                erro = "Digite uma senha com no mínimo 6 caracteres";
+                            }catch (FirebaseAuthInvalidCredentialsException e){
+                                erro = "O e-mail digitado é inválido";
+                            }catch (FirebaseAuthUserCollisionException e){
+                                erro = "E-mail já cadastrado";
+                            }catch (Exception e){
+                                erro = "Erro ao efetuar o cadastro";
+                                e.printStackTrace();
+                            }
+
+                            Toast.makeText(getBaseContext(), erro,Toast.LENGTH_LONG).show();
+                        }
+                    }
+                });
+    }
+
+    public void cadastrarFireBase(Usuario u){
+//        try {
+//            DatabaseReference reference = FireBaseBD.getReference(this);
+//            reference.child("Usuario").child(u.getIdFireBase()).setValue(u);
+//        }catch (Exception e){
+//            e.printStackTrace();
+//        }
+        criaAuth(u);
+    }
+
     public void cadastrarUsuario(View view){
         EditText nome =  (EditText)findViewById(R.id.nome_cadastro);
         EditText email =  (EditText)findViewById(R.id.email_cadastro);
@@ -310,19 +401,86 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
         String senhaString = senha.getText().toString();
         try {
             Facade.validarCadastro(nomeString, emailString, senhaString);
-            Usuario novoUsuario = new Usuario();
+            novoUsuario = new Usuario();
             novoUsuario.setNomeCompleto(nomeString);
             novoUsuario.setLogin(emailString);
             novoUsuario.setSenha(senhaString);
-            Facade.cadastrarUsuario(this, novoUsuario);
-            setContentView(R.layout.activity_login);
+            //Facade.cadastrarUsuario(this, novoUsuario);
+            cadastrarFireBase(novoUsuario);
+//            setContentView(R.layout.activity_login);
             Toast.makeText(this, "Cadastrado com sucesso! ", Toast.LENGTH_SHORT).show();
         } catch (ValidationException e) {
             Toast.makeText(this,e.getMessage(), Toast.LENGTH_SHORT).show();
-        } catch (SqliteException e) {
-            Toast.makeText(this,e.getMessage(), Toast.LENGTH_SHORT).show();
-        }
+        }// catch (SqliteException e) {
+        //    Toast.makeText(this,e.getMessage(), Toast.LENGTH_SHORT).show();
+        //}
 
+    }
+
+    public void validarLoginFireBase(final Usuario u){
+        autenticacao = ConfiguracaoFireBase.getFireBaseAutenticacao();
+        autenticacao.signInWithEmailAndPassword(u.getLogin(), u.getSenha()).addOnCompleteListener(new OnCompleteListener<AuthResult>() {
+
+            @Override
+            public void onComplete(@NonNull Task<AuthResult> task) {
+                if(task.isSuccessful()){
+                    FirebaseUser user = autenticacao.getCurrentUser();
+                    u.setId(1);
+                    u.setIdFireBase(user.getUid());
+                    u.setNomeCompleto(user.getEmail());
+                    u.setLogin(user.getEmail());
+                    u.setSenha(u.getSenha());
+//                    try {
+//                        Facade.cadastrarUsuario(getBaseContext(), u);
+//                    } catch (SqliteException e) {
+//                        e.printStackTrace();
+//                    }
+                    chamaTela(u);
+                }
+            }
+        });
+    }
+
+    public void chamaTela(Usuario u){
+        showProgress(true);
+        mAuthTask = new UserLoginTask(u.getLogin(), u.getSenha());
+        Bundle bundle = new Bundle();
+        bundle.putString("EMAIL", u.getLogin());
+        bundle.putString("NOME", u.getLogin());
+        bundle.putString("ID",u.getIdFireBase());
+        Intent intent = new Intent(this, MainActivity.class);
+        intent.putExtras(bundle);
+        u.setSincronizado(true);
+        u.setId(1);
+
+        verificaSeUsuarioJaExiste(u);
+
+        startActivity(intent);
+        finish();
+        mAuthTask.execute((Void) null);
+    }
+
+    public void verificaSeUsuarioJaExiste(Usuario u){
+        try {
+            Usuario usuario = pegaUsuarioLogado(u.getId());
+            if(usuario == null){
+                Facade.cadastrarUsuario(getBaseContext(), u);
+            }else{
+                Facade.deletarTabelaPorId(getBaseContext(), u.getId());
+                Facade.cadastrarUsuario(getBaseContext(), u);
+            }
+        } catch (SqliteException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public Usuario pegaUsuarioLogado(int id){
+        try {
+            return Facade.buscarUsuarioPorID(getBaseContext(), id);
+        } catch (SqliteException e) {
+            e.printStackTrace();
+            return null;
+        }
     }
 
     private interface ProfileQuery {

@@ -8,6 +8,7 @@ public class ScriptsSQL {
 
         public static final String createTable = "" +
                 "CREATE TABLE usuario(id integer primary key, " +
+                "id_firebase varchar not null, " +
                 "nome_completo varchar not null, " +
                 "login varchar not null unique, " +
                 "senha varchar not null, " +
@@ -19,6 +20,7 @@ public class ScriptsSQL {
         public static String insert = "" +
                 "INSERT INTO usuario(" +
                 columID+","+
+                "id_firebase," +
                 "nome_completo," +
                 "login," +
                 "senha," +
@@ -30,6 +32,7 @@ public class ScriptsSQL {
         public static String selectPorlogin = "select * from usuario where login = {0} and senha={1}";
         public static String selectPorId = "select * from usuario where id = {0}";
         public static String selectAll = "select * from usuario";
+        public static String deleteTableById = "delete from usuario where id = {0}";
     }
 
     public static class Receita {
@@ -40,7 +43,7 @@ public class ScriptsSQL {
                 "nome varchar not null, " +
                 "ingredientes varchar not null, " +
                 "modo_de_preparo varchar not null, " +
-                "id_usuario integer not null);";
+                "id_usuario varchar not null);";
 
 
 

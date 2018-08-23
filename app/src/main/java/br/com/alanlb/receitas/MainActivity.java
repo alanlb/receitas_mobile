@@ -18,16 +18,24 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.ValueEventListener;
+
 import java.util.ArrayList;
 
 import br.com.alanlb.receitas.control.CreateListView;
 import br.com.alanlb.receitas.control.DropListener;
+import br.com.alanlb.receitas.control.LoginActivity;
 import br.com.alanlb.receitas.dao.AbstractFactoryDAO;
 import br.com.alanlb.receitas.dao.Facade;
 import br.com.alanlb.receitas.dao.ReceitaDAO;
+import br.com.alanlb.receitas.dao.ReceitaDAOFireBase;
 import br.com.alanlb.receitas.dao.ReceitaDAOSqlite;
 import br.com.alanlb.receitas.dao.SingletonFactory;
 import br.com.alanlb.receitas.dao.UsuarioDAOSqlite;
+import br.com.alanlb.receitas.dao.firebase.FireBaseBD;
 import br.com.alanlb.receitas.exception.SqliteException;
 import br.com.alanlb.receitas.model.Historico;
 import br.com.alanlb.receitas.model.HistoricoProxy;
@@ -36,6 +44,7 @@ import br.com.alanlb.receitas.model.Observable;
 import br.com.alanlb.receitas.model.Receita;
 import br.com.alanlb.receitas.model.SGBD;
 import br.com.alanlb.receitas.model.Usuario;
+import br.com.alanlb.receitas.model.UsuarioLogado;
 import br.com.alanlb.receitas.util.ListAdapterItem;
 import br.com.alanlb.receitas.view.AdicionarReceitasFragment;
 import br.com.alanlb.receitas.view.DeletarReceitaFragment;
@@ -50,7 +59,7 @@ public class MainActivity extends Observable
     private  String nomeUsuario;
     private String emailUsuario;
     private Historico observer;
-    private int idUsuario;
+    private String idUsuario;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -66,7 +75,7 @@ public class MainActivity extends Observable
         Bundle bundle = intent.getExtras();
         emailUsuario = bundle.getString("EMAIL");
         nomeUsuario = bundle.getString("NOME");
-        idUsuario = bundle.getInt("ID");
+        idUsuario = bundle.getString("ID");
         Toast.makeText(this, emailUsuario, Toast.LENGTH_SHORT).show();
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
@@ -83,6 +92,8 @@ public class MainActivity extends Observable
         nome.setText(nomeUsuario);
         TextView email = header.findViewById(R.id.email_logado);
         email.setText(emailUsuario);
+
+        eventoDataBase();
     }
 
     @Override
@@ -111,7 +122,16 @@ public class MainActivity extends Observable
 
         //noinspection SimplifiableIfStatement
         if (id == R.id.action_settings) {
-            return true;
+            UsuarioLogado.setLogado(false);
+            UsuarioLogado.setId("");
+            Intent intent = new Intent(this, LoginActivity.class);
+            try {
+                Facade.deletarTabelaPorId(this,1);
+            } catch (SqliteException e) {
+                e.printStackTrace();
+            }
+            startActivity(intent);
+            finish();
         }
 
         return super.onOptionsItemSelected(item);
@@ -129,7 +149,7 @@ public class MainActivity extends Observable
             FragmentTransaction ft = fm.beginTransaction();
             ft.replace(R.id.layoutparafragmentos, frag,"minhas_receitas");
             Bundle bundle = new Bundle();
-            bundle.putInt("ID",idUsuario);
+            bundle.putString("ID",idUsuario);
             frag.setArguments(bundle);
             ft.commit();
             System.out.println(""+observer.getHistoricos());
@@ -165,6 +185,37 @@ public class MainActivity extends Observable
         return true;
     }
 
+    public void cadastraReceitaFireBase(View view){
+        EditText nome = findViewById(R.id.nome_cadastro_receita);
+        EditText ingredientes = findViewById(R.id.igredientes_textarea);
+        EditText modoDePreparo = findViewById(R.id.modo_de_preparo_textarea);
+
+
+        Receita receita = new Receita();
+
+        receita.setNome(nome.getText().toString());
+        receita.setIngredientes(ingredientes.getText().toString());
+        receita.setModoDePreparo(modoDePreparo.getText().toString());
+
+        //receita.setIdFireBase("sdf");
+        try {
+            Usuario usuario = Facade.buscarUsuarioPorID(this,1);
+            Toast.makeText(this,usuario.getIdFireBase(),Toast.LENGTH_SHORT).show();
+            receita.setId_usuario(usuario.getIdFireBase());
+            ReceitaDAOFireBase.salvarReceita(this,receita);
+
+            Toast.makeText(this,"Receita cadastrada com sucesso!", Toast.LENGTH_SHORT).show();
+
+            PrincipalFragment frag = new PrincipalFragment();
+            FragmentManager fm = getSupportFragmentManager();
+            FragmentTransaction ft = fm.beginTransaction();
+            ft.replace(R.id.layoutparafragmentos, frag,"principal_frag");
+            ft.commit();
+        } catch (SqliteException e) {
+            e.printStackTrace();
+        }
+    }
+
     public void cadastraReceita(View view){
         EditText nome = findViewById(R.id.nome_cadastro_receita);
         EditText ingredientes = findViewById(R.id.igredientes_textarea);
@@ -179,8 +230,8 @@ public class MainActivity extends Observable
         Usuario u = new Usuario();
 
         try {
-            u = Facade.buscarUsuarioPorID(this, this.idUsuario);
-            receita.setId_usuario(u.getId());
+            u = Facade.buscarUsuarioPorID(this, 0);
+            receita.setId_usuario(u.getIdFireBase());
 
             Facade.cadastrarReceita(this,receita);
             Toast.makeText(this, "Receita Salva com sucesso!",Toast.LENGTH_SHORT).show();
@@ -252,5 +303,31 @@ public class MainActivity extends Observable
             this.setHistorico("Erro ao apagar receita");
         }
 
+    }
+
+
+
+    public void eventoDataBase(){
+        DatabaseReference reference = FireBaseBD.getReference(this);
+        reference.child("Receita").addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                try {
+                    Facade.deletarTabelaReceita(getBaseContext());
+                    Facade.criarTabelaReceita(getBaseContext());
+                    for (DataSnapshot obj: dataSnapshot.getChildren()){
+                        Receita r = obj.getValue(Receita.class);
+                        Facade.cadastrarReceita(getBaseContext(), r);
+                    }
+                } catch (SqliteException e) {
+                    e.printStackTrace();
+                }
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
     }
 }

@@ -18,7 +18,7 @@ public class MinhasReceitasFragment extends Fragment {
         View view = inflater.inflate(R.layout.minhas_receitas_frag, null);
         lv = (ListView)view.findViewById(R.id.lv_receitas);
         Bundle bundle = getArguments();
-        int idUsuario = bundle.getInt("ID");
+        String idUsuario = bundle.getString("ID");
 
         CreateListView create = new CreateListView(getContext(), lv, idUsuario);
         return view;
