@@ -2,6 +2,8 @@ package br.com.alanlb.receitas.control;
 
 import android.app.Dialog;
 import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
@@ -52,7 +54,8 @@ public class CreateListView implements AdapterView.OnItemClickListener {
             ArrayList<Item> itens = new ArrayList<Item>();
 
             for(Receita receita: receitas){
-                itens.add(new Item(receita.getNome(),receita.getId()));
+                Bitmap imagem = BitmapFactory.decodeResource(context.getResources(),R.drawable.talheres);
+                itens.add(new Item(receita.getNome(),imagem));
             }
 
             ListAdapterItem adapter = new ListAdapterItem(context , itens);

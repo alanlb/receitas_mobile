@@ -2,6 +2,8 @@ package br.com.alanlb.receitas;
 
 import android.app.Dialog;
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
@@ -256,8 +258,9 @@ public class MainActivity extends Observable
                 Toast.makeText(this, "Nenhum resultado para esta pesquisa",Toast.LENGTH_SHORT).show();
             }else{
                 ArrayList<Item> itens = new ArrayList<Item>();
+                Bitmap imagem = BitmapFactory.decodeResource(this.getResources(),R.drawable.talheres);
                 for (Receita receita: receitas){
-                    itens.add(new Item(receita.getNome(),receita.getId()));
+                    itens.add(new Item(receita.getNome(),imagem));
                 }
                 ListAdapterItem adapter = new ListAdapterItem(this,itens);
 
@@ -285,8 +288,9 @@ public class MainActivity extends Observable
                 Toast.makeText(this, "Nenhum resultado para esta pesquisa",Toast.LENGTH_SHORT).show();
             }else{
                 ArrayList<Item> itens = new ArrayList<Item>();
+                Bitmap imagem = BitmapFactory.decodeResource(this.getResources(),R.drawable.talheres);
                 for (Receita receita: receitas){
-                    itens.add(new Item(receita.getNome(),receita.getId()));
+                    itens.add(new Item(receita.getNome(),imagem));
                 }
                 ListAdapterItem adapter = new ListAdapterItem(this,itens);
 

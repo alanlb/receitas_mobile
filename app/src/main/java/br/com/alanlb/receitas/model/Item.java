@@ -1,10 +1,13 @@
 package br.com.alanlb.receitas.model;
 
+import android.graphics.Bitmap;
+import android.widget.ImageView;
+
 public class Item {
     private String nome;
-    private int id;
-    public Item(String nome, int id){
-        this.setId(id);
+    private Bitmap imagem;
+    public Item(String nome, Bitmap imagem){
+        this.setImagem(imagem);
         this.setNome(nome);
     }
 
@@ -16,11 +19,12 @@ public class Item {
         this.nome = nome;
     }
 
-    public int getId() {
-        return id;
+
+    public Bitmap getImagem() {
+        return imagem;
     }
 
-    public void setId(int id) {
-        this.id = id;
+    public void setImagem(Bitmap imagem) {
+        this.imagem = imagem;
     }
 }

@@ -34,8 +34,8 @@ public class ListAdapterItem extends ArrayAdapter<Item> {
         TextView nome = (TextView) convertView.findViewById(R.id.nome_item);
         nome.setText(itemAtual.getNome());
 
-        TextView id = (TextView) convertView.findViewById(R.id.id_item);
-        id.setText(itemAtual.getId()+"");
+        ImageView imagem = (ImageView) convertView.findViewById(R.id.imageitem);
+        imagem.setImageBitmap(itemAtual.getImagem());
 
         return convertView;
     }
