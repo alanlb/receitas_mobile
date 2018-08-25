@@ -70,6 +70,10 @@ public class Facade {
         receitaDAO.deletarReceita(context, id);
     }
 
+    public static boolean isReceitaSincronizada(Context context, String idFirebase) throws SqliteException {
+        return receitaDAO.buscarReceitaPorIdFirebase(context, idFirebase);
+    }
+
         //Apagar Tabela Receita
 
     public static void deletarTabelaReceita(Context context) throws SqliteException {

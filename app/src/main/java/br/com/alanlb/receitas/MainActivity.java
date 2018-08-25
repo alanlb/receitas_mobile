@@ -4,7 +4,11 @@ import android.app.Dialog;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.net.Uri;
 import android.os.Bundle;
+import android.os.StrictMode;
+import android.provider.MediaStore;
+import android.support.annotation.NonNull;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.view.View;
@@ -16,27 +20,30 @@ import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.ValueEventListener;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
+import com.google.firebase.storage.UploadTask;
 
+import java.io.IOException;
 import java.util.ArrayList;
 
 import br.com.alanlb.receitas.control.CreateListView;
 import br.com.alanlb.receitas.control.DropListener;
 import br.com.alanlb.receitas.control.LoginActivity;
-import br.com.alanlb.receitas.dao.AbstractFactoryDAO;
 import br.com.alanlb.receitas.dao.Facade;
-import br.com.alanlb.receitas.dao.ReceitaDAO;
 import br.com.alanlb.receitas.dao.ReceitaDAOFireBase;
-import br.com.alanlb.receitas.dao.ReceitaDAOSqlite;
-import br.com.alanlb.receitas.dao.SingletonFactory;
-import br.com.alanlb.receitas.dao.UsuarioDAOSqlite;
 import br.com.alanlb.receitas.dao.firebase.FireBaseBD;
 import br.com.alanlb.receitas.exception.SqliteException;
 import br.com.alanlb.receitas.model.Historico;
@@ -44,7 +51,6 @@ import br.com.alanlb.receitas.model.HistoricoProxy;
 import br.com.alanlb.receitas.model.Item;
 import br.com.alanlb.receitas.model.Observable;
 import br.com.alanlb.receitas.model.Receita;
-import br.com.alanlb.receitas.model.SGBD;
 import br.com.alanlb.receitas.model.Usuario;
 import br.com.alanlb.receitas.model.UsuarioLogado;
 import br.com.alanlb.receitas.util.ListAdapterItem;
@@ -62,9 +68,14 @@ public class MainActivity extends Observable
     private String emailUsuario;
     private Historico observer;
     private String idUsuario;
+    public static final int IMAGEM_INTERNA = 12;
+    private Uri filePath;
+    private String url;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
+        StrictMode.setThreadPolicy(policy);
         observerLog  = new HistoricoProxy();
         super.onCreate(savedInstanceState);
         observer  =  observerLog.getObserver();
@@ -72,6 +83,8 @@ public class MainActivity extends Observable
         setContentView(R.layout.activity_main);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+
+        setUrl("");
 
         Intent intent = getIntent();
         Bundle bundle = intent.getExtras();
@@ -154,28 +167,24 @@ public class MainActivity extends Observable
             bundle.putString("ID",idUsuario);
             frag.setArguments(bundle);
             ft.commit();
-            System.out.println(""+observer.getHistoricos());
         } else if (id == R.id.adicionar_receitas) {
             AdicionarReceitasFragment frag = new AdicionarReceitasFragment();
             FragmentManager fm = getSupportFragmentManager();
             FragmentTransaction ft = fm.beginTransaction();
             ft.replace(R.id.layoutparafragmentos, frag,"adicionar_receitas");
             ft.commit();
-            System.out.println(""+observer.getHistoricos());
         } else if (id == R.id.pesquisa_receita) {
             PesquisaReceitasFragment frag = new PesquisaReceitasFragment();
             FragmentManager fm = getSupportFragmentManager();
             FragmentTransaction ft = fm.beginTransaction();
             ft.replace(R.id.layoutparafragmentos, frag,"pesquisa_receitas");
             ft.commit();
-            System.out.println(""+observer.getHistoricos());
         } else if (id == R.id.deletar_receita) {
             DeletarReceitaFragment frag = new DeletarReceitaFragment();
             FragmentManager fm = getSupportFragmentManager();
             FragmentTransaction ft = fm.beginTransaction();
             ft.replace(R.id.layoutparafragmentos, frag,"pesquisa_receitas");
             ft.commit();
-            System.out.println(""+observer.getHistoricos());
         } //else if (id == R.id.nav_share) {
 //
 //        } else if (id == R.id.nav_send) {
@@ -187,22 +196,54 @@ public class MainActivity extends Observable
         return true;
     }
 
+    public void editarReceita(View view){
+
+
+    }
+
     public void cadastraReceitaFireBase(View view){
         EditText nome = findViewById(R.id.nome_cadastro_receita);
         EditText ingredientes = findViewById(R.id.igredientes_textarea);
         EditText modoDePreparo = findViewById(R.id.modo_de_preparo_textarea);
 
+        //Bitmap imagem = BitmapFactory.decodeFile(pathImg.getText().toString());
+        String path = "";
+
+        FirebaseStorage firebaseStorage = FirebaseStorage.getInstance();
+        StorageReference storageReference = firebaseStorage.getReference();
+
+
+
 
         Receita receita = new Receita();
+
 
         receita.setNome(nome.getText().toString());
         receita.setIngredientes(ingredientes.getText().toString());
         receita.setModoDePreparo(modoDePreparo.getText().toString());
 
-        //receita.setIdFireBase("sdf");
         try {
             Usuario usuario = Facade.buscarUsuarioPorID(this,1);
-            Toast.makeText(this,usuario.getIdFireBase(),Toast.LENGTH_SHORT).show();
+            if(filePath != null) {
+                StorageReference riversRef = storageReference.child("imagens/receitas/" + filePath.getLastPathSegment());
+                path = "imagens/receitas/" + filePath.getLastPathSegment();
+                Toast.makeText(getBaseContext(), "" + filePath, Toast.LENGTH_SHORT).show();
+
+                UploadTask uploadTask = riversRef.putFile(filePath);
+                uploadTask.addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception exception) {
+                        Toast.makeText(getBaseContext(), "Erro ao salvar imagem", Toast.LENGTH_SHORT).show();
+                        exception.printStackTrace();
+                    }
+                }).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+                    @Override
+                    public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+                    }
+                });
+                filePath = null;
+            }
+            receita.setPathImg(path);
             receita.setId_usuario(usuario.getIdFireBase());
             ReceitaDAOFireBase.salvarReceita(this,receita);
 
@@ -218,37 +259,37 @@ public class MainActivity extends Observable
         }
     }
 
-    public void cadastraReceita(View view){
-        EditText nome = findViewById(R.id.nome_cadastro_receita);
-        EditText ingredientes = findViewById(R.id.igredientes_textarea);
-        EditText modoDePreparo = findViewById(R.id.modo_de_preparo_textarea);
-
-        Receita receita = new Receita();
-
-        receita.setNome(nome.getText().toString());
-        receita.setIngredientes(ingredientes.getText().toString());
-        receita.setModoDePreparo(modoDePreparo.getText().toString());
-
-        Usuario u = new Usuario();
-
-        try {
-            u = Facade.buscarUsuarioPorID(this, 0);
-            receita.setId_usuario(u.getIdFireBase());
-
-            Facade.cadastrarReceita(this,receita);
-            Toast.makeText(this, "Receita Salva com sucesso!",Toast.LENGTH_SHORT).show();
-
-            PrincipalFragment frag = new PrincipalFragment();
-            FragmentManager fm = getSupportFragmentManager();
-            FragmentTransaction ft = fm.beginTransaction();
-            ft.replace(R.id.layoutparafragmentos, frag,"principal_frag");
-            ft.commit();
-            this.setHistorico("Receita Criada com sucesso");
-        } catch (SqliteException e) {
-            Toast.makeText(this, e.getMessage(),Toast.LENGTH_SHORT).show();
-            this.setHistorico("Erro ao criar receita");
-        }
-    }
+//    public void cadastraReceita(View view){
+//        EditText nome = findViewById(R.id.nome_cadastro_receita);
+//        EditText ingredientes = findViewById(R.id.igredientes_textarea);
+//        EditText modoDePreparo = findViewById(R.id.modo_de_preparo_textarea);
+//
+//        Receita receita = new Receita();
+//
+//        receita.setNome(nome.getText().toString());
+//        receita.setIngredientes(ingredientes.getText().toString());
+//        receita.setModoDePreparo(modoDePreparo.getText().toString());
+//
+//        Usuario u = new Usuario();
+//
+//        try {
+//            u = Facade.buscarUsuarioPorID(this, 0);
+//            receita.setId_usuario(u.getIdFireBase());
+//
+//            Facade.cadastrarReceita(this,receita);
+//            Toast.makeText(this, "Receita Salva com sucesso!",Toast.LENGTH_SHORT).show();
+//
+//            PrincipalFragment frag = new PrincipalFragment();
+//            FragmentManager fm = getSupportFragmentManager();
+//            FragmentTransaction ft = fm.beginTransaction();
+//            ft.replace(R.id.layoutparafragmentos, frag,"principal_frag");
+//            ft.commit();
+//            this.setHistorico("Receita Criada com sucesso");
+//        } catch (SqliteException e) {
+//            Toast.makeText(this, e.getMessage(),Toast.LENGTH_SHORT).show();
+//            this.setHistorico("Erro ao criar receita");
+//        }
+//    }
 
     public void pesquisaReceita(View view){
         EditText nome = findViewById(R.id.pesquisaEditText);
@@ -320,8 +361,38 @@ public class MainActivity extends Observable
                     Facade.deletarTabelaReceita(getBaseContext());
                     Facade.criarTabelaReceita(getBaseContext());
                     for (DataSnapshot obj: dataSnapshot.getChildren()){
-                        Receita r = obj.getValue(Receita.class);
-                        Facade.cadastrarReceita(getBaseContext(), r);
+                        final Receita r = obj.getValue(Receita.class);
+                        FirebaseStorage firebaseStorage = FirebaseStorage.getInstance();
+                        StorageReference storageRef = firebaseStorage.getReference();
+                        r.setIdFireBase(obj.getKey());
+
+                        System.out.println("RETORNOUUUUU >>>>>>>>>>>>>>>>>>>>>>>>>>>>>> "+Facade.isReceitaSincronizada(getBaseContext(), obj.getKey()));
+                        if(!Facade.isReceitaSincronizada(getBaseContext(), obj.getKey())) {
+                            if (!r.getPathImg().equals("")) {
+
+                                storageRef.child(r.getPathImg()).getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
+                                    @Override
+                                    public void onSuccess(Uri uri) {
+                                        setUrl(uri.toString());
+                                        r.setUrl(getUrl());
+                                        try {
+                                            Facade.cadastrarReceita(getBaseContext(), r);
+                                        } catch (SqliteException e) {
+                                            e.printStackTrace();
+                                        }
+                                    }
+                                });
+
+//                            System.out.println("-----------------------------------" + getUrl());
+//                            r.setUrl(getUrl());
+//                            Facade.cadastrarReceita(getBaseContext(), r);
+                                //setUrl("");
+                            } else {
+                                r.setUrl("");
+                                Facade.cadastrarReceita(getBaseContext(), r);
+                            }
+                        }
+
                     }
                 } catch (SqliteException e) {
                     e.printStackTrace();
@@ -333,5 +404,56 @@ public class MainActivity extends Observable
 
             }
         });
+    }
+
+
+
+    //###################### IMAGEM ################################
+
+    public void pegaImagemReceita(View view){
+        Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+        intent.setType("image/*");
+        startActivityForResult(intent, IMAGEM_INTERNA);
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int responseCode, Intent intent){
+        if(requestCode == IMAGEM_INTERNA){
+            if(responseCode == RESULT_OK){
+
+                Uri imagemSelecionada = intent.getData();
+                filePath = imagemSelecionada;
+//                String[] colunas = {MediaStore.Images.Media.DATA};
+
+//                Cursor cursor = getContentResolver().query(imagemSelecionada, colunas, null, null, null);
+//                cursor.moveToFirst();
+
+//                int indexColuna = cursor.getColumnIndex(colunas[0]);
+//                String pathImg = cursor.getString(indexColuna);
+
+//                cursor.close();
+//
+//                TextView pathImagemTextView = (TextView) findViewById(R.id.pathimagem);
+//                pathImagemTextView.setText(pathImg);
+
+                ImageView imagemView = (ImageView)findViewById(R.id.imageviewselecionada);
+                Bitmap imagem = null;
+                try {
+                    imagem = MediaStore.Images.Media.getBitmap(this.getContentResolver(), filePath);
+                    imagemView.setImageBitmap(imagem);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+
+            }
+        }
+    }
+
+    public String getUrl() {
+        return url;
+    }
+
+    public void setUrl(String url) {
+        this.url = url;
     }
 }

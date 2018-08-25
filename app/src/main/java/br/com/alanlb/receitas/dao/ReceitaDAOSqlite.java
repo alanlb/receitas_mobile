@@ -1,5 +1,6 @@
 package br.com.alanlb.receitas.dao;
 
+import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
@@ -51,6 +52,7 @@ public class ReceitaDAOSqlite extends ReceitaDAO{
             sql = MessageFormat.format(sql, receita.getToSqlInsert());
             db.execSQL(sql);
             FactorySQL.closedb(context);
+            System.out.println("SQL --------- "+sql);
 
         } catch (SqliteException e) {
             e.printStackTrace();
@@ -58,6 +60,9 @@ public class ReceitaDAOSqlite extends ReceitaDAO{
         }
 
     }
+
+
+
     @Override
     public ArrayList<Receita> buscarReceitaPorNome(Context context, String nome) throws SqliteException {
         pegaBD(context);
@@ -80,6 +85,9 @@ public class ReceitaDAOSqlite extends ReceitaDAO{
                 receita.setNome(cursor.getString(cursor.getColumnIndex("nome")));
                 receita.setIngredientes(cursor.getString(cursor.getColumnIndex("ingredientes")));
                 receita.setModoDePreparo(cursor.getString(cursor.getColumnIndex("modo_de_preparo")));
+                receita.setPathImg(cursor.getString(cursor.getColumnIndex("path_img")));
+                receita.setUrl(cursor.getString(cursor.getColumnIndex("url_img")));
+                receita.setIdFireBase(cursor.getString(cursor.getColumnIndex("id_firebase")));
                 receitas.add(receita);
                 cursor.moveToNext();
             }
@@ -87,6 +95,29 @@ public class ReceitaDAOSqlite extends ReceitaDAO{
         }
         FactorySQL.closedb(context);
         return receitas;
+    }
+
+    @Override
+    public boolean buscarReceitaPorIdFirebase(Context context, String id) throws SqliteException {
+        pegaBD(context);
+        Cursor cursor;
+        String[] campos = {"id_firebase"};
+        cursor = db.query("receita", campos,null,null,null,null,null);
+
+        System.out.println("BUSCANDOOOOOOOOOOO");
+        if(cursor != null){
+            System.out.println("CURSOR NAO E NULO");
+            cursor.moveToFirst();
+            while (!cursor.isAfterLast()) {
+                String id_firebase = cursor.getString(cursor.getColumnIndex("id_firebase"));
+                System.out.println("TESTANTOOOOO");
+                System.out.println("TESTE  >>>>>>> "+ id_firebase + " : "+id);
+                if (id_firebase.equals(id))
+                    return true;
+                cursor.moveToNext();
+            }
+        }
+        return false;
     }
 
 
@@ -103,6 +134,10 @@ public class ReceitaDAOSqlite extends ReceitaDAO{
             receita.setId(Integer.parseInt(id));
             receita.setNome(cursor.getString(cursor.getColumnIndex("nome")));
             receita.setIngredientes(cursor.getString(cursor.getColumnIndex("ingredientes")));
+            receita.setModoDePreparo(cursor.getString(cursor.getColumnIndex("modo_de_preparo")));
+            receita.setPathImg(cursor.getString(cursor.getColumnIndex("path_img")));
+            receita.setUrl(cursor.getString(cursor.getColumnIndex("url_img")));
+            receita.setIdFireBase(cursor.getString(cursor.getColumnIndex("id_firebase")));
             FactorySQL.closedb(context);
             receitas.add(receita);
             throw new SqliteException("Pau ao buscar todas as receitas");
@@ -132,6 +167,9 @@ public class ReceitaDAOSqlite extends ReceitaDAO{
                 receita.setNome(cursor.getString(cursor.getColumnIndex("nome")));
                 receita.setIngredientes(cursor.getString(cursor.getColumnIndex("ingredientes")));
                 receita.setModoDePreparo(cursor.getString(cursor.getColumnIndex("modo_de_preparo")));
+                receita.setPathImg(cursor.getString(cursor.getColumnIndex("path_img")));
+                receita.setUrl(cursor.getString(cursor.getColumnIndex("url_img")));
+                receita.setIdFireBase(cursor.getString(cursor.getColumnIndex("id_firebase")));
                 receitas.add(receita);
                 cursor.moveToNext();
             }
@@ -166,5 +204,34 @@ public class ReceitaDAOSqlite extends ReceitaDAO{
             throw new SqliteException("Erro Insert Usuario");
         }
 
+    }
+
+    @Override
+    public void atualizaReceita(Context context, Receita receita, int id) throws SqliteException {
+        pegaBD(context);
+        ContentValues valores = new ContentValues();
+        String where;
+
+        where= "id = " +id;
+
+        valores.put("nome", receita.getNome());
+        valores.put("ingredientes", receita.getIngredientes());
+        valores.put("modo_de_preparo", receita.getModoDePreparo());
+        valores.put("id_usuario", receita.getId_usuario());
+        valores.put("path_img", receita.getPathImg());
+        valores.put("url_img", receita.getUrl());
+
+        db.update("receita",valores, where, null);
+        db.close();
+
+//        "INSERT INTO receita(" +
+//                //"id"+","+
+//                "nome," +
+//                "ingredientes," +
+//                "modo_de_preparo," +
+//                "id_usuario," +
+//                "path_img," +
+//                "url_img)" +
+//                "values ({0})";
     }
 }

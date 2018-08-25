@@ -7,7 +7,7 @@ import android.database.sqlite.SQLiteOpenHelper;
 public class HelperSQL extends SQLiteOpenHelper{
 
     private static final String NOME = "receitas.sqlite";
-    private static final int VERSION = 10;
+    private static final int VERSION = 13;
     private final String log = "DB";
     private Context context;
 

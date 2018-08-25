@@ -8,6 +8,8 @@ import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.squareup.picasso.Picasso;
+
 import java.util.ArrayList;
 
 import br.com.alanlb.receitas.R;
@@ -35,8 +37,14 @@ public class ListAdapterItem extends ArrayAdapter<Item> {
         nome.setText(itemAtual.getNome());
 
         ImageView imagem = (ImageView) convertView.findViewById(R.id.imageitem);
-        imagem.setImageBitmap(itemAtual.getImagem());
-
+        if(itemAtual.getUrl() != null){
+            Picasso.get().load(itemAtual.getUrl())
+                    .resize(50, 50)
+                    .centerCrop()
+                    .into(imagem);
+        }else {
+            imagem.setImageBitmap(itemAtual.getImagem());
+        }
         return convertView;
     }
 }

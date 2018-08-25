@@ -40,20 +40,26 @@ public class ScriptsSQL {
 
         public static final String createTable =  "" +
                 "CREATE TABLE receita(id integer primary key AUTOINCREMENT, " +
+                "id_firebase varchar not null, " +
                 "nome varchar not null, " +
                 "ingredientes varchar not null, " +
                 "modo_de_preparo varchar not null, " +
-                "id_usuario varchar not null);";
+                "id_usuario varchar not null," +
+                "path_img varchar not null, " +
+                "url_img varchar not null); ";
 
 
 
         public static final String insert = "" +
                 "INSERT INTO receita(" +
                 //"id"+","+
+                "id_firebase," +
                 "nome," +
                 "ingredientes," +
                 "modo_de_preparo," +
-                "id_usuario)" +
+                "id_usuario," +
+                "path_img," +
+                "url_img)" +
                 "values ({0})";
         public static String update = "";
         public static final String dropTable = "DROP TABLE IF EXISTS receita";

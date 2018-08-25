@@ -19,6 +19,8 @@ public abstract class ReceitaDAO {
 
     public abstract ArrayList<Receita> buscarReceitaPorNome(Context context, String nome) throws SqliteException;
 
+    public abstract boolean buscarReceitaPorIdFirebase(Context context, String id) throws SqliteException;
+
     public abstract List<Receita> buscarToasReceitas(Context context) throws SqliteException;
 
     public abstract ArrayList<Receita> buscarReceitaPorUsuario(Context context, String id) throws SqliteException;
@@ -26,4 +28,6 @@ public abstract class ReceitaDAO {
     public abstract void deletarReceita(Context context, int id)throws SqliteException;
 
     public abstract void deletarTabela(Context context) throws SqliteException;
+
+    public abstract void atualizaReceita(Context context, Receita receita, int id) throws SqliteException;
 }

@@ -13,6 +13,7 @@ import java.util.ArrayList;
 import br.com.alanlb.receitas.MainActivity;
 import br.com.alanlb.receitas.R;
 import br.com.alanlb.receitas.dao.Facade;
+import br.com.alanlb.receitas.dao.ReceitaDAOFireBase;
 import br.com.alanlb.receitas.dao.ReceitaDAOSqlite;
 import br.com.alanlb.receitas.dao.SingletonFactory;
 import br.com.alanlb.receitas.exception.SqliteException;
@@ -33,7 +34,8 @@ public class DropListener implements AdapterView.OnItemClickListener {
     @Override
     public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
         try {
-            Facade.deletarReceita(this.context, receitas.get(i).getId());
+            ReceitaDAOFireBase.deletarReceita(this.context, receitas.get(i));
+            //Facade.deletarReceita(this.context, receitas.get(i).getId());
         } catch (SqliteException e) {
             Toast.makeText(this.context, "Falha ao tentar apagar Receita", Toast.LENGTH_SHORT).show();
         }
