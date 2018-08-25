@@ -298,21 +298,22 @@ public class MainActivity extends Observable
             if (receitas.size() == 0){
                 Toast.makeText(this, "Nenhum resultado para esta pesquisa",Toast.LENGTH_SHORT).show();
             }else{
-                ArrayList<Item> itens = new ArrayList<Item>();
-                Bitmap imagem = BitmapFactory.decodeResource(this.getResources(),R.drawable.talheres);
-                for (Receita receita: receitas){
-                    itens.add(new Item(receita.getNome(),imagem));
-                }
-                ListAdapterItem adapter = new ListAdapterItem(this,itens);
+//                ArrayList<Item> itens = new ArrayList<Item>();
+//                Bitmap imagem = BitmapFactory.decodeResource(this.getResources(),R.drawable.talheres);
+//                for (Receita receita: receitas){
+//                    itens.add(new Item(receita.getNome(),imagem));
+//                }
+//                ListAdapterItem adapter = new ListAdapterItem(this,itens);
 
                 final Dialog dialog = new Dialog(this);
                 dialog.setContentView(R.layout.minhas_receitas_dialog_frag);
                 dialog.setTitle("Resultados");
                 ListView lv = (ListView) dialog.findViewById(R.id.lv_receitas_dialog);
-                lv.setAdapter(adapter);
-                lv.setOnItemClickListener(new CreateListView(this, receitas, dialog));
+                CreateListView createListView = new CreateListView(this,nome.getText().toString(),lv,dialog);
+//                lv.setAdapter(adapter);
+//                lv.setOnItemClickListener(new CreateListView(this, receitas, dialog));
                 dialog.show();
-                this.setHistorico("Pesquisa de receita realizada");
+//                this.setHistorico("Pesquisa de receita realizada");
             }
         } catch (SqliteException e) {
             Toast.makeText(this, "Erro ao pesquisar receita",Toast.LENGTH_SHORT).show();
@@ -324,7 +325,7 @@ public class MainActivity extends Observable
     public void apagarReceita(View view){
         EditText nome = findViewById(R.id.deletarEditText);
         try {
-            ArrayList<Receita> receitas = Facade.buscarReceitaPorNome(this,nome.getText().toString());
+            ArrayList<Receita> receitas = Facade.buscarReceitaPorUsuario(this, idUsuario);
             if (receitas.size() == 0){
                 Toast.makeText(this, "Nenhum resultado para esta pesquisa",Toast.LENGTH_SHORT).show();
             }else{

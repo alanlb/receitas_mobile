@@ -12,6 +12,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import br.com.alanlb.receitas.R;
+import br.com.alanlb.receitas.dao.Facade;
 import br.com.alanlb.receitas.dao.ReceitaDAOFireBase;
 import br.com.alanlb.receitas.exception.SqliteException;
 import br.com.alanlb.receitas.model.Receita;
@@ -120,6 +121,36 @@ public class ReceitaFrag extends Fragment {
                     }
                 }
             });
+        }else{
+            buttonEditar = view.findViewById(R.id.buttoneditar);
+            buttonEditar.setVisibility(View.VISIBLE);
+            buttonEditar.setText("Salvar");
+            buttonEditar.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    try {
+                        //##################### NOVA RECEITA ###########
+                        final Receita receita = new Receita();
+                        receita.setId(id);
+                        receita.setIdFireBase(idFirebase);
+                        receita.setNome(nomeText.getText().toString());
+                        receita.setIngredientes(ingredientesText.getText().toString());
+                        receita.setModoDePreparo(modoDePreparoText.getText().toString());
+                        receita.setId_usuario(Facade.buscarUsuarioPorID(view.getContext(), 1).getIdFireBase());
+                        receita.setPathImg(pathImg);
+                        receita.setUrl(url);
+                        //##############################################
+
+                        ReceitaDAOFireBase.salvarReceita(view.getContext(), receita);
+                        buttonEditar.setVisibility(View.INVISIBLE);
+                        Toast.makeText(view.getContext(), "Salvo com sucesso!",Toast.LENGTH_LONG).show();
+                    } catch (SqliteException e) {
+                        Toast.makeText(view.getContext(),"Não foi possível atualizar", Toast.LENGTH_SHORT).show();
+                        e.printStackTrace();
+                    }
+                }
+            });
+
         }
         return view;
     }

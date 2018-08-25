@@ -26,6 +26,7 @@ import java.io.OutputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.List;
 
 import br.com.alanlb.receitas.MainActivity;
 import br.com.alanlb.receitas.R;
@@ -48,6 +49,7 @@ public class CreateListView implements AdapterView.OnItemClickListener {
     private Dialog dialog;
     private static final String TAG = "Panoramio";
     private boolean proprioUsuarioDonoReceita;
+    private Usuario usuario;
 
     private static final int IO_BUFFER_SIZE = 4 * 1024;
 
@@ -58,6 +60,16 @@ public class CreateListView implements AdapterView.OnItemClickListener {
         this.proprioUsuarioDonoReceita = false;
 
         criar(context, listView, id);
+    }
+
+    public CreateListView(Context context, String nomePesquisa, ListView listView, Dialog dialog){
+        this.context = context;
+        this.listView = listView;
+        this.id = id;
+        this.proprioUsuarioDonoReceita = false;
+        this.dialog = dialog;
+
+        criar(context, nomePesquisa, listView);
     }
 
     public CreateListView(Context context, ArrayList<Receita> lista, Dialog dialog){
@@ -72,7 +84,7 @@ public class CreateListView implements AdapterView.OnItemClickListener {
             //ArrayList<Receita> receitas = SingletonFactory.getFactory().getReceitaDAO().buscarReceitaPorUsuario(context, id);
             this.receitas = receitas;
             ArrayList<Item> itens = new ArrayList<Item>();
-            Usuario usuario = Facade.buscarUsuarioPorID(context,1);
+            this.usuario = Facade.buscarUsuarioPorID(context,1);
             for(Receita receita: receitas){
                 if(receita.getUrl().equals("")){
                     Bitmap imagem = BitmapFactory.decodeResource(context.getResources(),R.drawable.talheres);
@@ -84,11 +96,44 @@ public class CreateListView implements AdapterView.OnItemClickListener {
                 }
 //                Bitmap imagem = BitmapFactory.decodeResource(context.getResources(),R.drawable.talheres);
 //                itens.add(new Item(receita.getNome(),imagem));
-                if(usuario.getIdFireBase().equals(receita.getId_usuario())){
+                if(this.usuario.getIdFireBase().equals(receita.getId_usuario())){
                     proprioUsuarioDonoReceita = true;
                 }else{
                     proprioUsuarioDonoReceita = false;
                 }
+            }
+
+
+            ListAdapterItem adapter = new ListAdapterItem(context , itens);
+            listView.setAdapter(adapter);
+            listView.setOnItemClickListener(null);
+            listView.setOnItemClickListener(this);
+        } catch (SqliteException e) {
+            new SqliteException("Não foi possível achar a receita");
+            Toast.makeText(context, e.getMessage(), Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    public void criar(Context context, String nomePesquisa, ListView listView){
+        try {
+            ArrayList<Receita> receitas = Facade.buscarReceitaPorNome(context,nomePesquisa);
+            //ArrayList<Receita> receitas = SingletonFactory.getFactory().getReceitaDAO().buscarReceitaPorUsuario(context, id);
+            this.receitas = receitas;
+            ArrayList<Item> itens = new ArrayList<Item>();
+            this.usuario = Facade.buscarUsuarioPorID(context,1);
+            for(Receita receita: receitas){
+                if(receita.getUrl().equals("")){
+                    Bitmap imagem = BitmapFactory.decodeResource(context.getResources(),R.drawable.talheres);
+                    itens.add(new Item(receita.getNome(),imagem));
+                }else{
+//                    URL url = new URL(receita.getUrl());
+                    //Bitmap imagem = loadBitmap(receita.getUrl());
+                    itens.add(new Item(receita.getNome(),receita.getUrl()));
+                }
+//                Bitmap imagem = BitmapFactory.decodeResource(context.getResources(),R.drawable.talheres);
+//                itens.add(new Item(receita.getNome(),imagem));
+
+                //System.out.println("TESTE >> "+usuario.getIdFireBase()+" ? "+receita.getId_usuario()+" = "+proprioUsuarioDonoReceita);
             }
 
 
@@ -108,6 +153,15 @@ public class CreateListView implements AdapterView.OnItemClickListener {
                             "Id: " + this.receitas.get(position).getId() +
                             "Receita: " + this.receitas.get(position).getIngredientes());
 
+//      ############ É dono da receita? ###########################################
+
+        if(usuario.getIdFireBase().equals(receitas.get(position).getId_usuario())){
+            proprioUsuarioDonoReceita = true;
+        }else{
+            proprioUsuarioDonoReceita = false;
+        }
+
+//       ###########################################################################
         Bundle bundle = new Bundle();
         bundle.putInt("ID",receitas.get(position).getId());
         bundle.putString("IDFIREBASE",receitas.get(position).getIdFireBase());
